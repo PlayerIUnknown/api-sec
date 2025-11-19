@@ -1,0 +1,19 @@
+[project]
+name = "noir-api-mapper"
+version = "0.1.0"
+description = "OWASP Noir powered API discovery to Postman collections"
+requires-python = ">=3.10"
+authors = [{name = "Internal Security Team"}]
+dependencies = [
+    "typer>=0.12",
+    "pydantic>=2.6",
+    "groq>=0.9",
+    "flask>=3.0",
+]
+
+[project.scripts]
+noir-api-agent = "noir_agent.cli:app"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

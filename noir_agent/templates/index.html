@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Noir API Mapper</h1>
+<p>Generate a Postman collection by scanning a repository with OWASP Noir and LLM inference.</p>
+<form method="post" action="{{ url_for('generate') }}">
+  <label>Repository URL or Path</label>
+  <input type="text" name="repo" placeholder="https://github.com/org/project" required />
+  <label>Base URL</label>
+  <input type="text" name="base_url" placeholder="https://api.example.com" required />
+  <button type="submit">Generate Collection</button>
+</form>
+{% endblock %}
