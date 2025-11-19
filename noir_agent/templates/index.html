@@ -1,12 +1,71 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Noir API Mapper</h1>
-<p>Generate a Postman collection by scanning a repository with OWASP Noir and LLM inference.</p>
-<form method="post" action="{{ url_for('generate') }}">
-  <label>Repository URL or Path</label>
-  <input type="text" name="repo" placeholder="https://github.com/org/project" required />
-  <label>Base URL</label>
-  <input type="text" name="base_url" placeholder="https://api.example.com" required />
-  <button type="submit">Generate Collection</button>
-</form>
+<section class="hero">
+  <div class="eyebrow">OWASP Noir · Groq LLM</div>
+  <h1>Map your API surface in minutes.</h1>
+  <p class="muted">
+    Paste a repo URL, point at a local folder, or drop in a zipped repository. We'll run OWASP Noir,
+    merge it with code-aware prompts, and ship a ready-to-import Postman collection.
+  </p>
+</section>
+
+<div class="grid">
+  <section class="panel">
+    <h2>Scan a repository</h2>
+    <form method="post" action="{{ url_for('generate') }}" enctype="multipart/form-data">
+      <div class="field">
+        <label for="repo">Repository URL or path</label>
+        <input type="text" id="repo" name="repo" placeholder="https://github.com/org/project" />
+        <p class="hint">Supports https/ssh git URLs and local folders.</p>
+      </div>
+
+      <div class="field">
+        <label for="repo_file">Upload a zipped repo (optional)</label>
+        <input type="file" id="repo_file" name="repo_file" accept=".zip" />
+        <p class="hint">We'll unzip it securely in an isolated temp directory.</p>
+      </div>
+
+      <div class="field">
+        <label for="base_url">Base API URL</label>
+        <input type="text" id="base_url" name="base_url" placeholder="https://api.example.com" required />
+        <div class="pill-row">
+          <span>https://api.internal.local</span>
+          <span>https://staging.example.dev</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit">Generate collection</button>
+        <p class="hint">The scan usually takes 30-60 seconds for medium repos.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h3>What you get</h3>
+    <ul class="feature-list">
+      <li>
+        <span class="chip">OWASP Noir</span>
+        <div>
+          <strong>Live endpoint discovery</strong>
+          <p class="muted">Automatically runs Noir to inventory reachable routes and verbs.</p>
+        </div>
+      </li>
+      <li>
+        <span class="chip">LLM assist</span>
+        <div>
+          <strong>Code-aware enrichment</strong>
+          <p class="muted">Adds request bodies, params, and doc notes by analyzing your handlers.</p>
+        </div>
+      </li>
+      <li>
+        <span class="chip">Postman</span>
+        <div>
+          <strong>Ready to import</strong>
+          <p class="muted">Download a Postman collection with consistent naming and folders.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+</div>
 {% endblock %}
