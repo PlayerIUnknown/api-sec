@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Collection Ready</h1>
+<p>Your Postman collection has been generated.</p>
+<p><a href="{{ url_for('download', filename=filename) }}">Download {{ filename }}</a></p>
+<h2>Preview</h2>
+<pre>{{ preview }}</pre>
+<p><a href="{{ url_for('index') }}">Generate another collection</a></p>
+{% endblock %}
