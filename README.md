@@ -7,6 +7,9 @@ Tools for turning source repositories into Postman collections using OWASP Noir 
 ```bash
 poetry install  # or pip install -e .
 noir-api-agent generate --repo https://github.com/org/project --base-url https://api.example.com --out postman.json
+
+# zip files are also supported:
+noir-api-agent generate --repo ./downloads/service.zip --base-url https://api.example.com
 ```
 
 ## Flask UI
