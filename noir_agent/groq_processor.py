@@ -136,6 +136,9 @@ def _prepare_payloads(base_url: str, noir_endpoints: List[NoirEndpoint], route_f
         return len(json.dumps(payload))
 
     endpoint_chunks = _chunk_list_by_size(noir_endpoints, endpoint_size, MAX_REQUEST_CHARS)
+    # Ensure we still send the route files to Groq even when Noir found no endpoints.
+    if not endpoint_chunks:
+        endpoint_chunks = [[]]
 
     payloads: List[Dict[str, Any]] = []
     for endpoint_chunk in endpoint_chunks:
