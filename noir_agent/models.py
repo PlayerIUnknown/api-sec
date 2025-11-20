@@ -4,14 +4,17 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 
 class NoirParam(BaseModel):
     """Represents a parameter reported by OWASP Noir."""
 
     name: str
-    param_type: str = Field(alias="type")
+    param_type: str = Field(
+        alias="type",
+        validation_alias=AliasChoices("type", "param_type"),
+    )
     extra: Dict[str, Any] = Field(default_factory=dict)
 
 
