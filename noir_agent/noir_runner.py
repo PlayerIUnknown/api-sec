@@ -6,7 +6,7 @@ import json
 import logging
 import shutil
 import subprocess
-from typing import List
+from typing import Iterable, List, Optional
 
 from .models import NoirEndpoint
 
@@ -39,11 +39,42 @@ def run_noir(repo_path: str, base_url: str) -> List[NoirEndpoint]:
         LOGGER.error("Failed to parse Noir output: %s", exc)
         raise NoirError("Noir did not return valid JSON") from exc
 
+    raw_endpoints = _extract_endpoints(payload)
+
     endpoints = []
-    for endpoint in payload.get("endpoints", []):
+    for endpoint in raw_endpoints:
         try:
             endpoints.append(NoirEndpoint(**endpoint))
         except Exception as exc:  # pylint: disable=broad-except
             LOGGER.warning("Skipping malformed Noir endpoint %s: %s", endpoint, exc)
     LOGGER.info("Parsed %d endpoints from Noir", len(endpoints))
     return endpoints
+
+
+def _extract_endpoints(payload: object) -> Iterable[dict]:
+    """Normalize different Noir JSON shapes into a list of endpoints."""
+
+    if isinstance(payload, list):
+        return payload
+
+    if not isinstance(payload, dict):
+        return []
+
+    def first_list(keys: Iterable[str]) -> Optional[List[dict]]:
+        for key in keys:
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+        return None
+
+    endpoints = first_list(["endpoints", "active_results", "results"])
+    if endpoints is not None:
+        return endpoints
+
+    # Some Noir outputs may wrap endpoints inside another object (e.g. {"data": [...]})
+    for value in payload.values():
+        if isinstance(value, list):
+            return value
+
+    LOGGER.warning("Noir JSON contained no endpoints; keys present: %s", list(payload))
+    return []
