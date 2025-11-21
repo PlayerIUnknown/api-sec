@@ -6,7 +6,7 @@ import json
 import logging
 import shutil
 import subprocess
-from typing import Iterable, List, Optional
+from typing import Iterable, List
 
 from .models import NoirEndpoint
 
@@ -52,29 +52,36 @@ def run_noir(repo_path: str, base_url: str) -> List[NoirEndpoint]:
 
 
 def _extract_endpoints(payload: object) -> Iterable[dict]:
-    """Normalize different Noir JSON shapes into a list of endpoints."""
+    """Normalize different Noir JSON shapes into a list of endpoints.
 
-    if isinstance(payload, list):
-        return payload
+    Noir has historically emitted endpoints under a variety of keys and nesting levels
+    (e.g. ``endpoints``, ``active_results`` or nested under ``data``/``results``). We
+    therefore perform a recursive walk of the JSON payload and collect every mapping
+    that looks like an endpoint (it has both ``method`` and ``url`` keys). This is
+    defensive but avoids silently returning zero endpoints when Noir succeeds but
+    changes its output shape.
+    """
 
-    if not isinstance(payload, dict):
-        return []
+    endpoints: List[dict] = []
 
-    def first_list(keys: Iterable[str]) -> Optional[List[dict]]:
-        for key in keys:
-            value = payload.get(key)
-            if isinstance(value, list):
-                return value
-        return None
+    def walk(obj: object) -> None:
+        if isinstance(obj, dict):
+            if "method" in obj and "url" in obj:
+                endpoints.append(obj)
+            for value in obj.values():
+                walk(value)
+        elif isinstance(obj, list):
+            for item in obj:
+                walk(item)
 
-    endpoints = first_list(["endpoints", "active_results", "results"])
-    if endpoints is not None:
-        return endpoints
+    walk(payload)
 
-    # Some Noir outputs may wrap endpoints inside another object (e.g. {"data": [...]})
-    for value in payload.values():
-        if isinstance(value, list):
-            return value
+    if not endpoints:
+        top_level_keys: List[str] = []
+        if isinstance(payload, dict):
+            top_level_keys = list(payload)
+        LOGGER.warning(
+            "Noir JSON contained no endpoints; top-level keys: %s", top_level_keys
+        )
 
-    LOGGER.warning("Noir JSON contained no endpoints; keys present: %s", list(payload))
-    return []
+    return endpoints
